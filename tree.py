@@ -88,6 +88,13 @@ class Node(object):
 		self.children.append(node)
 	def print_state(self):
 		self.gameState.print_state()
+		
+	def win_state_x(self):
+		return self.gameState.win_state_x()
+
+	def win_state_o(self):
+		return self.gameState.win_state_o()
+
 
 
 
@@ -104,8 +111,10 @@ class Tree(object):
 					self.fill_game_tree('o',n)
 				else:
 					self.fill_game_tree('x',n)
+
 	def set_currentNode(self, node):
 		self.currentNode = node
+
 	def end_state(self):
 		if (not(self.currentNode.gameState.win_state_o()) and not(self.currentNode.gameState.win_state_x())):
 			if len(self.currentNode.get_children()) > 0:
@@ -125,7 +134,7 @@ if __name__ == "__main__":
 			##perform some calculations -- here is where you compare which move is best
 			wins = 0
 			for n in t.currentNode.get_children()[i].get_leaves():
-				if n.gameState.win_state_x():
+				if n.win_state_x():
 					wins+=1
 			if wins > most_wins:
 				most_wins = wins
