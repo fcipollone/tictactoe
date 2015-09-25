@@ -1,30 +1,21 @@
 #!/usr/bin/python
 
 class tictactoe(object):
-	def __init__(self, string = ""):
-		if string == "":
-			self.gameState = [["", "", ""], ["", "", ""], ["", "", ""]]
-		else:
-			places = string.split(",")
-			if len(places) != 9:
-				self.gameState = [["", "", ""], ["", "", ""], ["", "", ""]]
-			else:
-				self.gameState = []
-				for row in range(0,3):
-					self.gameState.append(list())
-					for col in range(0,3):
-						self.gameState[row].append(places[row*3 + col])
+	def __init__(self, gameState=['.','.','.','.','.','.','.','.','.']):
+		self.gameState = gameState
+
 	def three_in_a_row(self, player):
 		for it in range(0,3):
-			if self.gameState[it][0] == player and self.gameState[it][1] == player and self.gameState[it][2] == player:
+			if self.gameState[it*3] == player and self.gameState[3*it+1] == player and self.gameState[3*it+2] == player:
 				return True
-			if self.gameState[0][it] == player and self.gameState[1][it] == player and self.gameState[2][it] == player:
+			if self.gameState[it] == player and self.gameState[it+3] == player and self.gameState[it+6] == player:
 				return True
-		if self.gameState[0][0] == player and self.gameState[1][1] == player and self.gameState[2][2] == player:
+		if self.gameState[0] == player and self.gameState[4] == player and self.gameState[8] == player:
 			return True
-		if self.gameState[0][2] == player and self.gameState[1][1] == player and self.gameState[2][0] == player:
+		if self.gameState[6] == player and self.gameState[4] == player and self.gameState[2] == player:
 			return True
 		return False
+			
 	def win_state_x(self):
 		if self.three_in_a_row('x') and not(self.three_in_a_row('o')):
 			return True
@@ -33,75 +24,80 @@ class tictactoe(object):
 		if self.three_in_a_row('o') and not(self.three_in_a_row('x')):
 			return True
 		return False
+
 	def get_game_children(self, player):
-		returnList = []
-		for row in range(0,3):
-			for col in range(0,3):
-				if self.gameState[row][col] != 'x' and self.gameState[row][col] != 'o' :
-					stateString = ""
-					for row_return in range(0,3):
-						for col_return in range(0,3):
-							if row == row_return and col == col_return:
-								if row_return == 2 and col_return == 2:
-									stateString += player
-								else:
-									stateString += player + ","
-							else:
-								if row_return == 2 and col_return == 2:
-									stateString += self.gameState[row_return][col_return]
-								else:
-									stateString += self.gameState[row_return][col_return] + ","
-					returnList.append(tictactoe(stateString))
-		return returnList
+		empty = []
+		for pos in range(len(self.gameState)):
+			if self.gameState[pos] == '.':
+				newState = list(self.gameState)
+				newState[pos] = player
+				empty.append(newState)
+		return empty
 
 	def two_in_a_row(self, player):
-		# Checks for potential win and returns position to block: x,y
-		for y in range(0,3):	# Check horizontal
-			if self.gameState[y][1] == player and self.gameState[y][0] == player and self.gameState[y][2] == ' ':
-				return [2,y]
-			elif self.gameState[y][1] == player and self.gameState[y][1] == player and self.gameState[y][0] == ' ':
-				return [0,y]
-			elif self.gameState[y][0] == player and self.gameState[y][2] == player and self.gameState[y][1] == ' ':
-				return [1,y]
-		for x in range(0,3): # Check vertical
-			if self.gameState[1][x] == player and self.gameState[0][x] == player and self.gameState[2][x] == ' ':
-				return [x,2]
-			elif self.gameState[1][x] == player and self.gameState[2][x] == player and self.gameState[0][x] == ' ':
-				return [x,0]
-			elif self.gameState[0][x] == player and self.gameState[2][x] == player and self.gameState[1][x] == ' ':
-				return [x,1]
-		# Check diagonal
-		if self.gameState[1][1] == player and self.gameState[0][0] == player and self.gameState[2][2] == ' ':
-			return [2,2]
-		elif self.gameState[1][1] == player and self.gameState[2][2] == player and self.gameState[0][0] == ' ':
-			return [0,0]
-		elif self.gameState[1][1] == player and self.gameState[2][0] == player and self.gameState[0][2] == ' ':
-			return [2,0]
-		elif self.gameState[1][1] == player and self.gameState[0][2] == player and self.gameState[2][0] == ' ':
-			return [0,2]
-		elif self.gameState[0][0] == player and self.gameState[2][2] == player and self.gameState[1][1] == ' ':
-			return [1,1]
-		elif self.gameState[0][2] == player and self.gameState[2][0] == player and self.gameState[1][1] == ' ':
-			return [1,1]
-		return None 
+		#Horizontal
+		for it in range(0,3):
+			if self.gameState[it*3] == player and self.gameState[3*it+1] == player and self.gameState[3*it+2] == '.':
+				return 3*it+2
+			elif self.gameState[it*3] == player and self.gameState[3*it+1] == '.' and self.gameState[3*it+2] == player:
+				return 3*it+1
+			elif self.gameState[it*3] == '.' and self.gameState[3*it+1] == player and self.gameState[3*it+2] == player:
+				return 3*it
+	
+		#Vertical
+		for it in range(0,3):
+			if self.gameState[it] == player and self.gameState[it+3] == player and self.gameState[it+6] == '.':
+				return it+6
+			elif self.gameState[it] == player and self.gameState[it+3] == '.' and self.gameState[it+6] == player:
+				return it+3
+			elif self.gameState[it] == '.' and self.gameState[it+3] == player and self.gameState[it+6] == player:
+				return it
+	
+		#Diagonal
+		if self.gameState[0] == player and self.gameState[4] == player and self.gameState[8] == '.':
+			return 8
+		elif self.gameState[0] == player and self.gameState[4] == '.' and self.gameState[8] == player:
+			return 4
+		elif self.gameState[0] == '.' and self.gameState[4] == player and self.gameState[8] == player:
+			return 0
+		elif self.gameState[6] == player and self.gameState[4] == player and self.gameState[2] == '.':
+			return 2
+		elif self.gameState[6] == player and self.gameState[4] == '.' and self.gameState[2] == player:
+			return 4
+		elif self.gameState[6] == '.' and self.gameState[4] == player and self.gameState[2] == player:
+			return 6
+
+		return None
+
 
 	def print_state(self):
 		returnString = ""
-		for row in range(0,3):
-			returnString += " "
-			for col in range(0,3):
-				returnString += self.gameState[row][col]
-				if col < 2:
-					returnString += " | "
-			if row < 2:
-				returnString += "\n-----------"
-			returnString += "\n"
-		print returnString
+		#for i in range(0,9):
+		#	returnString += " "
+		#	returnString += self.gameState[i]
+		#	if i != 2 or i != 5 or i != 8:
+		#		returnString += " | "
+		##	if i == 2 or i == 5:
+		#		returnString += "\n-----------"
+		#	#returnString += "\n"
+		#print returnString
+
+		string = str()
+		for i in range(0,9):
+			if i%3 == 0 and i != 0:
+				print string
+				string = str()
+			string += self.gameState[i] + " "
+		print string + "\n"
+
+
+
 
 
 class Node(object):
-	def __init__(self, gameState):
-		self.gameState = gameState
+	def __init__(self, tictactoe):
+		self.tictactoe = tictactoe
+		self.gameState = self.tictactoe.gameState
 		self.parent = None
 		self.children = []
 		self.depth = None
@@ -114,27 +110,21 @@ class Node(object):
 				for leaf in node.get_leaves():
 					returnList.append(leaf)
 		return returnList
+
 	def get_children(self):
 		return self.children
+
 	def insert_child(self, node):
 		node.parent = self
 		node.depth = self.depth+1
 		self.children.append(node)
+
 	def print_state(self):
-		self.gameState.print_state()
-	
-	def win_state_x(self):
-		return self.gameState.win_state_x()
-
-	def win_state_o(self):
-		return self.gameState.win_state_o()
-
-	def two_in_a_row(self, player):
-		return self.gameState.two_in_a_row(player) 
+		self.tictactoe.print_state()
 
 	def get_gameState(self):
-		return self.gameState.gameState
-
+		return self.gameState
+	
 
 class Tree(object):
 	def __init__(self, root):
@@ -142,9 +132,10 @@ class Tree(object):
 		self.root = root
 		self.currentNode = self.root
 	def fill_game_tree(self, first_player, node):
-		if (not(node.gameState.win_state_o()) and not(node.gameState.win_state_x())):
-			for el in node.gameState.get_game_children(first_player):
-				n = Node(el)
+		if (not(node.tictactoe.win_state_o()) and not(node.tictactoe.win_state_x())):
+			gameStates = node.tictactoe.get_game_children(first_player)
+			for s in gameStates:
+				n = Node(tictactoe(s))
 				node.insert_child(n)
 				if first_player == 'x':
 					self.fill_game_tree('o',n)
@@ -155,10 +146,10 @@ class Tree(object):
 		self.currentNode = node
 
 	def end_state(self):
-		if self.currentNode.gameState.win_state_x():
+		if self.currentNode.tictactoe.win_state_x():
 			print "Player 1 has won"
 			return True
-		elif self.currentNode.gameState.win_state_o():
+		elif self.currentNode.tictactoe.win_state_o():
 			print "Player 2 has won"
 			return True
 		elif len(self.currentNode.get_children()) <= 0:
@@ -168,36 +159,12 @@ class Tree(object):
 
 def valid_position(currentNode, position):
 	# Converts position 1-9 and returns position x,y or None,None if invalid
-	x,y = None, None
 	position = int(position)
-	x,y = convert_position(position)
-	if [x,y] != [None,None]:
-		if currentNode.get_gameState()[y][x] != ' ':
-			x,y = None,None
-	return [x,y]
-
-def convert_position(position):
-	x,y = None, None
-	position = int(position)
-	if position == 1:
-		x,y = 0,0
-	elif position == 2:
-		x,y = 1,0
-	elif position == 3:
-		x,y = 2,0
-	elif position == 4:
-		x,y = 0,1
-	elif position == 5:
-		x,y = 1,1
-	elif position == 6:
-		x,y = 2,1
-	elif position == 7:
-		x,y = 0,2
-	elif position == 8:
-		x,y = 1,2
-	elif position == 9:
-		x,y = 2,2
-	return [x,y]
+	#x,y = convert_position(position)
+	#if [x,y] != [None,None]:
+	if currentNode.get_gameState()[position-1] != '.':
+			return None
+	return position-1
 
 def minimax(turn, currentNode, children):
 	best_node = 0
@@ -205,22 +172,22 @@ def minimax(turn, currentNode, children):
 
 	# Guarantees to make the winning move
 	for i in range(0,len(children)):
-		if turn%2 == 0 and children[i].win_state_x() or turn%2 == 1 and children[i].win_state_o():
+		if turn%2 == 0 and children[i].tictactoe.win_state_x() or turn%2 == 1 and children[i].tictactoe.win_state_o():
 			return i
 		
 	# Blocks other player from winning
 	two_in_a_row = None
 	if turn%2 == 0:
-		two_in_a_row = currentNode.two_in_a_row('o')
+		two_in_a_row = currentNode.tictactoe.two_in_a_row('o')
 		#print "x", two_in_a_row
 	elif turn%2 == 1:
-		two_in_a_row = currentNode.two_in_a_row('x')
+		two_in_a_row = currentNode.tictactoe.two_in_a_row('x')
 		#print "o", two_in_a_row
 	if two_in_a_row != None:
 		#print two_in_a_row
-		x,y = two_in_a_row
+		pos = two_in_a_row
 		for n in range(0, len(children)):
-			if (turn%2 == 0 and children[n].get_gameState()[y][x] == 'x') or (turn%2 == 1 and children[n].get_gameState()[y][x] == 'o'):
+			if (turn%2 == 0 and children[n].get_gameState()[pos] == 'x') or (turn%2 == 1 and children[n].get_gameState()[pos] == 'o'):
 				#print "OPTIMAL"
 				#print children[n].get_gameState()
 				return n
@@ -230,10 +197,10 @@ def minimax(turn, currentNode, children):
 		score = [0]
 		#score = 0
 		for n in children[i].get_leaves():
-			if (n.win_state_x() and turn%2 == 1) or (n.win_state_o() and turn%2 == 0):
+			if (n.tictactoe.win_state_x() and turn%2 == 1) or (n.tictactoe.win_state_o() and turn%2 == 0):
 				#score += 10
 				score.append(10-(n.depth-currentNode.depth))
-			elif n.win_state_o():
+			elif n.tictactoe.win_state_o():
 				#score -= 10
 				score.append((n.depth-currentNode.depth)-10)
 		if turn%2 == 0: # highest score is the optimal move for x
@@ -251,14 +218,14 @@ def minimax(turn, currentNode, children):
 	return best_node
 
 def print_move(turn, position):
-	x,y = convert_position(position)
+	#pos = convert_position(position)
 	print "Move #" + str(turn+1) + ": player " + str(turn%2+1) + " plays " + str(position) + ":"
 
 if __name__ == "__main__":
 	###Example usage
 	#initialize a tree with a root node with an empty game state
 	print "Setting up game tree"
-	t = Tree(Node(tictactoe(" , , , , , , , , ")))
+	t = Tree(Node(tictactoe()))
 	#fill up the game tree. This sets each nodes children to be the game states of the next possible moves
 	t.fill_game_tree('x', t.root)
 	print "Game tree set up. Ready to play"
@@ -276,12 +243,12 @@ if __name__ == "__main__":
 		# User input
 		if COMPUTER == 1 and turn%2 == 0:
 			position = input('> ')			
-			x,y = valid_position(t.currentNode, position)
-			while [x,y] == [None,None]:
+			pos = valid_position(t.currentNode, position)
+			while pos == None:
 				print "Invalid input. Please enter a number 1-9 that corresponds to an empty position"
-				x,y = valid_position(t.currentNode, input('> '))
+				pos = valid_position(t.currentNode, input('> '))
 			for child in children:
-				if child.get_gameState()[y][x] == 'x':
+				if child.get_gameState()[pos] == 'x':
 					t.currentNode = child
 			print_move(turn, position)
 
@@ -289,9 +256,6 @@ if __name__ == "__main__":
 		else:
 			best_node = minimax(turn, t.currentNode, children)
 			t.currentNode = children[best_node]
+			#print_move(turn, 1000)
 		t.currentNode.print_state()
 		turn+=1
-
-
-
-
