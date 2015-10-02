@@ -2,6 +2,10 @@
 import copy
 import sys
 import random
+import Tkinter
+import time
+
+from Tkinter import *
 
 last_state_list = list()
 current_state_list = list()
@@ -179,13 +183,10 @@ class Tree(object):
 
 	def end_state(self):
 		if self.currentNode.tictactoe.win_state_x():
-			print "Player 1 has won"
 			return True
 		elif self.currentNode.tictactoe.win_state_o():
-			print "Player 2 has won"
 			return True
 		elif len(self.currentNode.get_children()) <= 0:
-			print "The game is a tie."
 			return True
 		return False
 
@@ -263,58 +264,190 @@ def print_move(turn):
 def print_AImove(turn, position):
 	sys.stdout.write("Move #" + str(turn+1) + ": enter choice for player " + str(turn%2+1) + " : " + str(position) + "\n\n")
 
-def compare_states(last_state, current_state):
-	last_state.get_AI_lastmove()
-	current_state.get_AI_currmove()
-	
-	for i in range(0,9):
-		if current_state_list[i] != last_state_list[i]:
-			return i+1
 
 
-if __name__ == "__main__":
-	###Example usage
-	#initialize a tree with a root node with an empty game state
-	#print "Setting up game tree"
-	t = Tree(Node(tictactoe()))
-	#fill up the game tree. This sets each nodes children to be the game states of the next possible moves
-	t.fill_game_tree('x', t.root)
-	print "Game tree set up. Ready to play"
-	turn = 0 # keeps track of player's turn; x == 0, o == 1
 
-	# User input for single or dual agent
-	COMPUTER = input('Enter choice (1 for single agent, 2 for dual agents): ')
-	while COMPUTER != 1 and COMPUTER != 2:
-		COMPUTER = input('Enter choice (1 for single agent, 2 for dual agents): ')
-	sys.stdout.write("\n")
-	t.currentNode.print_state()
-	# Game loop
-	while(not(t.end_state())):
-		children = t.currentNode.get_children()
+class PlayGame:
+	def __init__(self, comp):
+		self.t = Tree(Node(tictactoe()))
+		self.t.fill_game_tree('x', self.t.root)
+		self.COMPUTER = comp
+		self.turn = 0
+	def reset(self, comp):
+		self.t.currentNode = self.t.root
+		self.COMPUTER = comp
+		self.turn = 0
 
-		# User input
-		if COMPUTER == 1 and turn%2 == 0:
-			print_move(turn)
-			position = input('')	
-			sys.stdout.write("\n")		
-			pos = valid_position(t.currentNode, position)
-			while pos == None:
-				print "Invalid input. Please enter a number 1-9 that corresponds to an empty position"
-				print_move(turn)
-				pos = valid_position(t.currentNode, input(''))	
-				sys.stdout.write("\n")
-			for child in children:
-				if child.get_gameState()[pos] == 'x':
-					t.currentNode = child
-			#print_move(turn, position)
+	def compare_states(self,last_state, current_state):
+		last_state.get_AI_lastmove()
+		current_state.get_AI_currmove()
+		
+		for i in range(0,9):
+			if current_state_list[i] != last_state_list[i]:
+				return i+1
+	def playGame(self, inputNum = 0):
+		###Example usage
+		#initialize a tree with a root node with an empty game state
+		#print "Setting up game tree"
+		#fill up the game tree. This sets each nodes children to be the game states of the next possible moves
+ # keeps track of player's turn; x == 0, o == 1
 
-		# AI
+		# User input for single or dual agent
+
+		#self.t.currentNode.print_state()
+		# Game loop
+		if(not(self.t.end_state())):
+			children = self.t.currentNode.get_children()
+
+			# User input
+			if self.COMPUTER == 1 and self.turn%2 == 0:
+				#print_move(turn)
+				position = inputNum
+				pos = valid_position(self.t.currentNode, position)
+				while pos == None:
+					#print "Invalid input. Please enter a number 1-9 that corresponds to an empty position"
+					#print_move(self.turn)
+					return -1
+
+				for child in children:
+					if child.get_gameState()[pos] == 'x':
+						self.t.currentNode = child
+				#print_move(turn, position)
+
+			# AI
+			else:
+				self.t.lastNode = copy.copy(self.t.currentNode) #Keeps track of last gamestate
+				best_node = minimax(self.turn, self.t.currentNode, children)
+				self.t.currentNode = children[best_node]
+				#pos variable is the move the AI takes
+				pos = self.compare_states(self.t.lastNode, self.t.currentNode) #Compares last and curr state
+				#print_AImove(turn, pos)
+			#self.t.currentNode.print_state()
+			self.turn+=1
+			if self.t.currentNode.tictactoe.win_state_x() or self.t.currentNode.tictactoe.win_state_o():
+				return 0
+			return 1
 		else:
-			t.lastNode = copy.copy(t.currentNode) #Keeps track of last gamestate
-			best_node = minimax(turn, t.currentNode, children)
-			t.currentNode = children[best_node]
-			#pos variable is the move the AI takes
-			pos = compare_states(t.lastNode, t.currentNode) #Compares last and curr state
-			print_AImove(turn, pos)
-		t.currentNode.print_state()
-		turn+=1
+			return 0
+
+
+
+class Application(Frame):
+
+    def callback(self, num):
+    	if self.gameState == 1:
+    		if self.gameTree.t.currentNode.gameState[num] == '.':
+
+	    		r = self.gameTree.playGame(num+1)
+	    		if r == 0:
+	    			self.clear_all()
+	    		r = self.gameTree.playGame()
+	    		if r == 0:
+	    			self.clear_all()
+	    		self.update()
+
+
+
+    def update(self):
+	    for i in range(0,len(self.placementArray)):
+			if self.gameTree.t.currentNode.gameState[i] == '.':
+				self.placementArray[i]['text'] = ''
+			elif self.gameTree.t.currentNode.gameState[i] == 'x':
+				self.placementArray[i]['text'] = 'X'
+			elif self.gameTree.t.currentNode.gameState[i] == 'o':
+				self.placementArray[i]['text'] = 'O'
+
+    def start1Agent(self):
+    	self.gameState = 1
+
+    	for el in self.placementArray:
+    		el['state'] = 'normal'
+    	self.gameTree.reset(1)
+    	self.start2Player['state'] = 'disabled'
+    	self.start1Player['state'] = 'disabled'
+    	self.clear['state'] = 'normal'
+
+
+    def start2Agent(self):
+    	if self.gameState == 2:
+    		r = self.gameTree.playGame()
+    		if r == 0:
+    			time.sleep(3)
+    			self.clear_all()
+
+    		self.update()
+    	else:
+	    	self.gameState = 2
+    		self.start2Player['text'] = "Next"
+    		self.start1Player['state'] = 'disabled'
+    		self.gameTree.reset(2)
+    		self.clear['state'] = 'normal'
+
+    def clear_all(self):
+    	self.gamestate = 0
+    	self.start2Player['state'] = 'normal'
+    	self.start1Player['state'] = 'normal'
+    	self.start2Player['text'] = "Start 2 agent game"
+    	for el in self.placementArray:
+    		el['state'] = 'disabled'
+    	self.gameTree.t.currentNode = self.gameTree.t.root
+    	self.update()
+    	self.clear['state'] = 'disabled'
+
+
+
+    def createWidgets(self):
+    	self.gameState = 0
+    	self.placementArray = []
+    	self.button0 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(0), text = "")
+    	self.button1 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(1), text = "")
+    	self.button2 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(2), text = "")
+    	self.button3 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(3), text = "")
+    	self.button4 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(4), text = "")
+    	self.button5 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(5), text = "")
+    	self.button6 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(6), text = "")
+    	self.button7 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(7), text = "")
+    	self.button8 = Button(self, font = ("Helvetica", 128), command = lambda: self.callback(8), text = "")
+    	self.placementArray.append(self.button0)
+    	self.placementArray.append(self.button1)
+    	self.placementArray.append(self.button2)
+    	self.placementArray.append(self.button3)
+    	self.placementArray.append(self.button4)
+    	self.placementArray.append(self.button5)
+    	self.placementArray.append(self.button6)
+    	self.placementArray.append(self.button7)
+    	self.placementArray.append(self.button8)
+    	count = 0
+    	for el in self.placementArray:
+    		el.grid(row = 1+int(count/3), column = 1+count % 3)
+    		el.config(height=1, width=2)
+    		el['state'] = 'disabled'
+    		count+=1
+
+    	self.myLabel = Label(self, font = ("Helvetica", 36))
+    	self.myLabel["text"] = "Tic Tac Toe"
+    	self.myLabel.grid(row = 0, column = 1, columnspan = 3)
+    	self.start1Player = Button(self, font = ('Helvetica', 16), text = "Start 1 agent game", command = self.start1Agent)
+    	self.start1Player.grid(row=1,column =0)
+    	self.start1Player.config(height=6,width=20)
+      	self.start2Player = Button(self, font = ('Helvetica', 16), text = "Start 2 agent game", command = self.start2Agent)
+    	self.start2Player.grid(row=2,column =0)
+    	self.start2Player.config(height=6,width=20)
+    	self.clear = Button(self, font = ('Helvetica', 16), text = "Clear", command = self.clear_all)
+    	self.clear.grid(row=3,column =0)
+    	self.clear.config(height=6,width=20)
+    	self.clear['state'] = 'disabled'
+
+
+    def __init__(self, master=None):
+        Frame.__init__(self, master)
+        self.pack()
+        self.createWidgets()
+        self.gameTree = PlayGame(1)
+        print self.gameTree.t.root.gameState
+
+if __name__ == '__main__':
+	root = Tk()
+	app = Application(master=root)
+	app.mainloop()
+	root.destroy()
