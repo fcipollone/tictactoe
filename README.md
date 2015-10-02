@@ -1,5 +1,17 @@
 # tictactoe
-Artificial Intelligence Homework 1
+
+How to run the program:
+python basic_tree.py
+Runs the basic tic tac toe program and outputs to the command line
+python tree.py
+Runs the extra credit GUI tic tac toe program.
+
+Project Team:
+Frank Cipollone - tree structure/extra credit
+Kim Ngo - search algorithm/improvements
+Kendra Bilardello - search algorithm/improvements
+
+Artificial Intelligence Project 1
 
 There are three classes:
 
@@ -43,3 +55,6 @@ There are three classes:
 			set_currentNode: sets the current node
 
 I added an example program at the bottom of the file
+
+
+
