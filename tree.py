@@ -190,6 +190,14 @@ class Tree(object):
 			return True
 		return False
 
+	def end_state_print(self):
+		if self.currentNode.tictactoe.win_state_x():
+			print "Player 1 has won the game.\n"
+		elif self.currentNode.tictactoe.win_state_o():
+			print "Player 2 has won the game.\n"
+		elif len(self.currentNode.get_children()) <= 0:
+			print "The game is a tie.\n"
+
 def valid_position(currentNode, position):
 	# Converts position 1-9 and returns position x,y or None,None if invalid
 	position = int(position)
@@ -332,19 +340,45 @@ class PlayGame:
 
 
 
+def print_move(turn):
+	sys.stdout.write("Move #" + str(turn+1) + ": enter choice for player " + str(turn%2+1) + " : ")
+
+def print_AImove(turn, position):
+	sys.stdout.write("Move #" + str(turn+1) + ": enter choice for player " + str(turn%2+1) + " : " + str(position) + "\n\n")
+
+def compare_states(last_state, current_state):
+	last_state.get_AI_lastmove()
+	current_state.get_AI_currmove()
+	
+	for i in range(0,9):
+		if current_state_list[i] != last_state_list[i]:
+			return i+1
+
 class Application(Frame):
 
     def callback(self, num):
     	if self.gameState == 1:
-    		if self.gameTree.t.currentNode.gameState[num] == '.':
+    		if self.gameTree.t.currentNode.gameState[num] == '.' and not self.gameTree.t.currentNode.tictactoe.win_state_x() and not self.gameTree.t.currentNode.tictactoe.win_state_o():
 
 	    		r = self.gameTree.playGame(num+1)
 	    		if r == 0:
-	    			self.clear_all()
+	    			self.update()
+	    			#self.clear_all()
+	    		pos = compare_states(self.gameTree.t.lastNode, self.gameTree.t.currentNode) #Compares last and curr state	    			
+	    		print_AImove(self.gameTree.turn-1, pos)
+	    		self.gameTree.t.currentNode.print_state()
+
 	    		r = self.gameTree.playGame()
 	    		if r == 0:
-	    			self.clear_all()
+	    			self.update()
+	    			#self.clear_all()
+	    		pos = compare_states(self.gameTree.t.lastNode, self.gameTree.t.currentNode) #Compares last and curr state	    			
+	    		print_AImove(self.gameTree.turn-1, pos)
+	   	    	self.gameTree.t.currentNode.print_state()
+
 	    		self.update()
+	    		self.gameTree.t.end_state_print()
+
 
 
 
@@ -366,25 +400,34 @@ class Application(Frame):
     	self.start2Player['state'] = 'disabled'
     	self.start1Player['state'] = 'disabled'
     	self.clear['state'] = 'normal'
+    	print "One Agent Game"
+    	self.gameTree.t.currentNode.print_state()
+
 
 
     def start2Agent(self):
     	if self.gameState == 2:
-    		r = self.gameTree.playGame()
-    		if r == 0:
-    			time.sleep(3)
-    			self.clear_all()
+    		if not self.gameTree.t.end_state():
+	    		r = self.gameTree.playGame()
+	    		pos = compare_states(self.gameTree.t.lastNode, self.gameTree.t.currentNode) #Compares last and curr state
+	    		print_AImove(self.gameTree.turn-1, pos)
+	    		self.gameTree.t.currentNode.print_state()
+	    		self.update()
+	    		self.gameTree.t.end_state_print()
 
-    		self.update()
     	else:
 	    	self.gameState = 2
     		self.start2Player['text'] = "Next"
     		self.start1Player['state'] = 'disabled'
     		self.gameTree.reset(2)
     		self.clear['state'] = 'normal'
+    		print "Two Agent Game"
+    		self.gameTree.t.currentNode.print_state()
+
 
     def clear_all(self):
-    	self.gamestate = 0
+    	self.update()
+    	self.gameState = 0
     	self.start2Player['state'] = 'normal'
     	self.start1Player['state'] = 'normal'
     	self.start2Player['text'] = "Start 2 agent game"
@@ -444,7 +487,7 @@ class Application(Frame):
         self.pack()
         self.createWidgets()
         self.gameTree = PlayGame(1)
-        print self.gameTree.t.root.gameState
+        print "Game Tree Loaded"
 
 if __name__ == '__main__':
 	root = Tk()
